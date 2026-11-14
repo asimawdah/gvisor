@@ -194,6 +194,42 @@ func TestClearRange(t *testing.T) {
 	}
 }
 
+// Verify that range operations handle an exclusive end equal to the bitmap size.
+func TestRangeOperationsEndingAtBitmapSize(t *testing.T) {
+	t.Run("FlipRange", func(t *testing.T) {
+		bitmap := New(256)
+		bitmap.FlipRange(192, 256)
+
+		if got, want := bitmap.GetNumOnes(), uint32(64); got != want {
+			t.Errorf("GetNumOnes() = %d, want %d", got, want)
+		}
+		want := make([]uint32, 64)
+		for i := range want {
+			want[i] = uint32(i + 192)
+		}
+		if got := bitmap.ToSlice(); !slices.Equal(got, want) {
+			t.Errorf("FlipRange() = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("ClearRange", func(t *testing.T) {
+		bitmap := New(256)
+		bitmap.FlipRange(0, 256)
+		bitmap.ClearRange(200, 256)
+
+		if got, want := bitmap.GetNumOnes(), uint32(200); got != want {
+			t.Errorf("GetNumOnes() = %d, want %d", got, want)
+		}
+		want := make([]uint32, 200)
+		for i := range want {
+			want[i] = uint32(i)
+		}
+		if got := bitmap.ToSlice(); !slices.Equal(got, want) {
+			t.Errorf("ClearRange() = %v, want %v", got, want)
+		}
+	})
+}
+
 func TestMinimum(t *testing.T) {
 	randSlice, bitmap := generateFilledBitmap(0, 1024, 200)
 	min := bitmap.Minimum()
