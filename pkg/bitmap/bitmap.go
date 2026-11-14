@@ -165,12 +165,11 @@ func (b *Bitmap) Clone() Bitmap {
 	return bitmap
 }
 
-// countOnesForBlocks count all 1 bits within b.bitBlock of begin and that of end.
-// The begin block and end block are inclusive.
+// countOnesForBlocks counts all 1 bits in blocks intersecting [begin, end).
 func (b *Bitmap) countOnesForBlocks(begin, end uint32) uint64 {
 	ones := uint64(0)
 	beginBlock := begin / 64
-	endBlock := end / 64
+	endBlock := (end - 1) / 64
 	for i := beginBlock; i <= endBlock; i++ {
 		ones += uint64(bits.OnesCount64(b.bitBlock[i]))
 	}
